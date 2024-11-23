@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eduyou-payment-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: eduyou-payment-service
+  template:
+    metadata:
+      labels:
+        app: eduyou-payment-service
+    spec:
+      containers:
+        - name: eduyou-payment-service
+          image: akshayjayachandranvv/eduyou-payment-service:latest
+          ports:
+            - containerPort: 4005
+          env:
+            - name: PORT
+              valueFrom:
+                secretKeyRef:
+                  name: eduyou-secrets
+                  key: PAYMENT_PORT
+            - name: RABBITMQ_URL
+              valueFrom:
+                secretKeyRef:
+                  name: eduyou-secrets
+                  key: RABBITMQ_URL
+            - name: STRIPE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: eduyou-secrets
+                  key: STRIPE_SECRET
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: eduyou-payment-service
+spec:
+  type: ClusterIP
+  selector:
+    app: eduyou-payment-service
+  ports:
+    - protocol: TCP
+      port: 4005
+      targetPort: 40005
